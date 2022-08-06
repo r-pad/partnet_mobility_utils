@@ -1,0 +1,35 @@
+[project]
+name = "partnet_mobility_utils"
+version = "0.1.0"
+description = "Partnet-Mobility Utils"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {file = "LICENSE.txt"}
+authors = [
+  {email = "baeisner@andrew.cmu.edu", name = "Ben Eisner"}
+]
+dependencies = [
+
+]
+
+[build-system]
+requires = [
+  "setuptools >= 62.3.2",
+  "setuptools-scm",
+  "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+develop = [
+  "pytest",
+  "black >= 22.3.0",
+  "isort",
+  "mypy",
+  "pylint",
+  "autoflake",
+  "pre-commit",
+]
+
+[tool.isort]
+profile = "black"
