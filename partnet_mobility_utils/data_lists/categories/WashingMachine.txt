@@ -1,0 +1,17 @@
+100282,WashingMachine
+100283,WashingMachine
+103351,WashingMachine
+103361,WashingMachine
+103369,WashingMachine
+103425,WashingMachine
+103452,WashingMachine
+103480,WashingMachine
+103490,WashingMachine
+103508,WashingMachine
+103518,WashingMachine
+103521,WashingMachine
+103528,WashingMachine
+103775,WashingMachine
+103776,WashingMachine
+103778,WashingMachine
+103781,WashingMachine

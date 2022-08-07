@@ -14,3 +14,13 @@ Setup (make sure docker is installed):
 ```
 brew install act
 ```
+
+Run act
+```
+act -j develop
+```
+
+## Create data lists
+```
+python scripts/detect_invalid.py ~/datasets/partnet-mobility/dataset ./partnet_mobility_utils/data_lists/
+```
