@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from partnet_mobility_utils.pm_data import PMObject
+from partnet_mobility_utils.data import PMObject
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 

@@ -33,7 +33,7 @@ develop = [
   "autoflake",
   "pre-commit",
 ]
-deploy_docs = [
+build_docs = [
   "mkdocs-material",
   "mkdocstrings[python]",
 ]
