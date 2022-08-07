@@ -36,6 +36,13 @@ deploy_docs = [
   "mkdocs-material",
   "mkdocstrings[python]",
 ]
+pybullet = [
+  "wheel",
+  "pybullet",
+]
+sapien = [
+  "sapien",
+]
 
 [tool.isort]
 profile = "black"

@@ -25,7 +25,7 @@ class PartialPC(TypedDict):
 class FullPCData(TypedDict):
     pos: npt.NDArray[np.float32]
     norm: npt.NDArray[np.float32]
-    seg: npt.NDArray[np.uint]
+    # seg: npt.NDArray[np.uint]
     ins: List
     sem: List
     art: List

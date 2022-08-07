@@ -45,7 +45,7 @@ jobs:
         if: ${{ env.ACT }}
         with:
           python-version: '3.10'
-      - run: pip install ".[develop]"
+      - run: pip install ".[develop,pybullet,sapien]"
 
       # Run black.
       - name: Code Quality
@@ -57,10 +57,9 @@ jobs:
         # run: python -m mypy partnet_mobility_utils/ tests/
         run: python -m mypy partnet_mobility_utils/
 
-      # Disable tests to speed up this one commit.
       # Run tests.
-      # - name: Test with pytest
-      #   run: python -m pytest
+      - name: Test with pytest
+        run: python -m pytest
 
   deploy:
     environment:

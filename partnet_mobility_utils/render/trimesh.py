@@ -15,7 +15,7 @@ class TrimeshRenderer:
         # link_name, link_mesh (there may be many)
         # Also, they might be scenes, so we should flatten.
         link_meshes_unflattened = []
-        for link in obj.links:
+        for link in obj.obj.links:
             obj_files = [os.path.join(obj.obj_dir, f) for f in link.mesh_names]
             link_meshes_unflattened.extend(
                 [(link.name, trimesh.load(obj_file)) for obj_file in obj_files]
@@ -73,7 +73,7 @@ class TrimeshRenderer:
 
         # Lastly, apply the base transformation.
         # All the points are in the same frame, except that there's a base transform.
-        bj = [j for j in obj.joints if j.parent == "base"]
+        bj = [j for j in obj.obj.joints if j.parent == "base"]
         assert len(bj) == 1
         base_joint = bj[0]
 

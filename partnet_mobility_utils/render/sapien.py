@@ -1,7 +1,6 @@
 import numpy as np
 
 from partnet_mobility_utils.pm_data import PMObject
-from partnet_mobility_utils.render import PartialPC
 
 try:
     import sapien
@@ -16,7 +15,7 @@ class SAPIENRenderer:
         self._renderer = sapien.core.VulkanRenderer(offscreen_only=True)
         self._engine.set_renderer(self._renderer)
 
-    def render(self, obj: PMObject) -> PartialPC:
+    def render(self, obj: PMObject):
         scene = self._engine.create_scene()
         scene.set_timestep(1 / 100.0)
 
