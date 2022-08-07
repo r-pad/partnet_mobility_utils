@@ -11,12 +11,12 @@ JointType = Literal["slider", "free", "hinge", "heavy", "static", "slider+"]
 
 @dataclass
 class JointSemantic:
-    """Joint Semantics
+    """Describes semantic attributes of a joint.
 
     Attributes:
-        name: it's a name
-        type: it's a type
-        label: it's a mfing label
+        name: The name of the joint, as defined in URDF.
+        type: The type of joint, one of: {"slider", "free", "hinge", "heavy", "static", "slider+"}
+        label: The semantic label of the joint (i.e. button, door, etc.). Shared across objects.
     """
 
     name: str
@@ -26,31 +26,35 @@ class JointSemantic:
 
 @dataclass
 class Semantics:
-    """Dis a thing"""
+    """Each object includes a semantics.txt file, which describes the semantics of each joint.
+
+    This class wraps the semantic file, and provides functions to filter down to specific joints by
+    type, name, or label.
+    """
 
     sems: List[JointSemantic]
 
     def by_name(self, name: str) -> JointSemantic:
-        """Does this do somthing?
+        """Get the semantics for a specific joint.
 
         Args:
-            name (str): Desc
+            name (str): Joint name.
 
         Returns:
-            JointSemantic: Desc
+            JointSemantic
         """
         return {semantic.name: semantic for semantic in self.sems}[name]
 
     def by_type(
         self, joint_type: Union[JointType, Sequence[JointType]]
     ) -> List[JointSemantic]:
-        """By type
+        """Filter down all semantics in the object by joint type.
 
         Args:
-            joint_type (Union[JointType, Sequence[JointType]]): Whether it's a sequence or not.
+            joint_type (Union[JointType, Sequence[JointType]]): One or more joint types
 
         Returns:
-            List[JointSemantic]: _description_
+            List[JointSemantic]: A list of JointSemantics matching the joint_type.
         """
         if isinstance(joint_type, str):
             joint_types = {joint_type}
@@ -59,10 +63,26 @@ class Semantics:
         return [sem for sem in self.sems if sem.type in joint_types]
 
     def by_label(self, label: str) -> List[JointSemantic]:
+        """Filter down all semantics in the object by label name.
+
+        Args:
+            label (str): The semantic joint label (i.e. "button")
+
+        Returns:
+            List[JointSemantic]: Joints matching this label.
+        """
         return [sem for sem in self.sems if sem.label == label]
 
     @staticmethod
     def from_file(fn: Union[str, Path]) -> "Semantics":
+        """Parse a semantics file.
+
+        Args:
+            fn (Union[str, Path]): Semantics filename (should end in semantics.txt)
+
+        Returns:
+            Semantics: The parsed semantics file.
+        """
         path = Path(fn)
         with path.open("r") as f:
             lines = f.read().split("\n")
@@ -86,10 +106,10 @@ class Semantics:
 
 @dataclass
 class Metadata:
-    """This represents the metadata file
+    """This represents provides access to the metadata for the object, found in metadata.txt.
 
     Attributes:
-        model_cat: The model categorty. Will be something like "Chair".
+        model_cat: The model category. Will be something like "Chair".
     """
 
     model_cat: str
@@ -111,9 +131,14 @@ class Metadata:
 
 
 class PMObject:
-    """This class describes the grouping of files for each object."""
+    "This class describes the grouping of files for each object."
 
     def __init__(self, obj_dir: Union[str, Path]):
+        """Initializer.
+
+        Args:
+            obj_dir (Union[str, Path]): The object-level directory. For instance, "pm/111000/". This file should contain a urdf file, semantics.txt, and metadata.txt.
+        """
         self.obj_dir = Path(obj_dir)
 
         # Load the data in.
@@ -126,10 +151,12 @@ class PMObject:
 
     @property
     def obj_id(self) -> str:
+        """The object ID."""
         return self.obj_dir.name
 
     @property
     def category(self) -> str:
+        """Object category."""
         return self.metadata.model_cat
 
     @property
@@ -139,10 +166,12 @@ class PMObject:
 
     @property
     def urdf_fn(self) -> Path:
+        """The URDF file"""
         return self.obj_dir / "mobility.urdf"
 
     @property
     def meta_fn(self) -> Path:
+        """The metadata file"""
         return self.obj_dir / "meta.json"
 
     @property
