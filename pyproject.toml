@@ -9,7 +9,9 @@ authors = [
   {email = "baeisner@andrew.cmu.edu", name = "Ben Eisner"}
 ]
 dependencies = [
-
+  "numpy",
+  "scipy",
+  "trimesh",
 ]
 
 [build-system]
@@ -29,6 +31,10 @@ develop = [
   "pylint",
   "autoflake",
   "pre-commit",
+]
+deploy_docs = [
+  "mkdocs-material",
+  "mkdocstrings[python]",
 ]
 
 [tool.isort]
