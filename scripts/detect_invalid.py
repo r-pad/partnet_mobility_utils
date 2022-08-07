@@ -2,8 +2,8 @@ from pathlib import Path
 
 import typer
 
-from partnet_mobility_utils.dset_utils import write_ids
-from partnet_mobility_utils.pm_data import PMObject
+from partnet_mobility_utils.data import PMObject
+from partnet_mobility_utils.dataset import write_ids
 
 
 def main(root: Path, outdir: Path):

@@ -7,7 +7,7 @@ from typing import Dict, List, Literal, Optional, Sequence, Tuple, Union
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from partnet_mobility_utils.pm_data import PMObject
+from partnet_mobility_utils.data import PMObject
 from partnet_mobility_utils.render import PartialPC
 
 try:
