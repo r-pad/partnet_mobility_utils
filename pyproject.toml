@@ -32,6 +32,7 @@ develop = [
   "pylint",
   "autoflake",
   "pre-commit",
+  "jupyterlab",
 ]
 build_docs = [
   "mkdocs-material",
@@ -44,6 +45,28 @@ pybullet = [
 sapien = [
   "sapien",
 ]
+notebooks = [
+  "visualize_3d @ git+https://github.com/r-pad/visualize_3d",
+]
+
+# This is required to allow us to have notebooks/ at the top level.
+[tool.setuptools]
+packages = ["partnet_mobility_utils"]
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+python_version = 3.8
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = [
+  "pybullet.*",
+  "pybullet_data.*",
+  "trimesh.*",
+  "scipy.*",
+  "sapien.*",
+]
+ignore_missing_imports = true
