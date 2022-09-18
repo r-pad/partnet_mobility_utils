@@ -2,9 +2,10 @@ import copy
 import logging
 import typing
 from pathlib import Path
-from typing import Dict, Iterable, List, Literal, Tuple, Union
+from typing import Dict, Iterable, List, Literal, Sequence, Tuple, Union
 
 from partnet_mobility_utils.data import PMObject
+from partnet_mobility_utils.render import PartialPC, PMRenderer
 from partnet_mobility_utils.render.pybullet import PybulletRenderer
 
 
@@ -48,8 +49,6 @@ class PCDataset:
         self,
         root: Union[str, Path],
         split: Union[AVAILABLE_DATASET, List[str]],
-        randomize_joints: bool = False,
-        randomize_camera: bool = False,
         renderer: Literal["pybullet", "sapien", "trimesh"] = "pybullet",
     ):
         if isinstance(split, str):
@@ -81,33 +80,44 @@ class PCDataset:
         self.pm_objs: Dict[str, PMObject] = {
             id: PMObject(Path(root) / id) for id in self._ids
         }
-        self.renderers: Dict[str, PybulletRenderer] = {}
+        self.renderers: Dict[str, PMRenderer] = {}
         self.renderer_type = renderer
-        self.randomize_joints = randomize_joints
-        self.randomize_camera = randomize_camera
 
-    def __getitem__(self, item: Union[int, str]):
-        if isinstance(item, str):
-            obj_id = item
-        else:
-            obj_id = self._ids[item]
-
-        obj = self.pm_objs[obj_id]
-
+    def get(
+        self,
+        obj_id: str,
+        joints: Union[
+            Literal["random"],
+            Sequence[Union[float, Literal["random"]]],
+            None,
+        ] = None,
+        camera_xyz: Union[
+            Literal["random"],
+            Tuple[float, float, float],
+            None,
+        ] = None,
+    ) -> PartialPC:
         if obj_id not in self.renderers:
             if self.renderer_type == "pybullet":
                 renderer = PybulletRenderer()
             else:
                 raise NotImplementedError("not yet implemented")
             self.renderers[obj_id] = renderer
-
         renderer = self.renderers[obj_id]
 
-        pc_info = renderer.render(
-            obj, "all" if self.randomize_joints else False, self.randomize_camera
+        pc_render = renderer.render(
+            pm_obj=self.pm_objs[obj_id], joints=joints, camera_xyz=camera_xyz
         )
 
-        return pc_info
+        return pc_render
+
+    def __getitem__(self, item: Union[int, str]) -> PartialPC:
+        if isinstance(item, str):
+            obj_id = item
+        else:
+            obj_id = self._ids[item]
+
+        return self.get(obj_id, joints=None, camera_xyz=None)
 
     def __len__(self):
         return len(self._ids)

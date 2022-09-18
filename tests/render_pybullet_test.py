@@ -9,7 +9,7 @@ TESTDATA_DIR = Path(__file__).parent / "testdata"
 def test_render():
     obj = PMObject(TESTDATA_DIR / "100809")
     renderer = PybulletRenderer()
-    res = renderer.render(obj)
+    res = renderer.render(obj, joints="random", camera_xyz="random")
 
 
 if __name__ == "__main__":

@@ -2,13 +2,13 @@ import functools
 import os
 import sys
 from contextlib import contextmanager
-from typing import Dict, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render import PartialPC
+from partnet_mobility_utils.render import PartialPC, PMRenderer
 
 try:
     import pybullet as p
@@ -342,13 +342,18 @@ class PMRenderEnv:
                 "UTF-8"
             ): -1,
         }
+        self.jn_to_ix = {}
 
         # Get the segmentation.
         for _id in range(p.getNumJoints(self.obj_id, physicsClientId=self.client_id)):
-            _name = p.getJointInfo(self.obj_id, _id, physicsClientId=self.client_id)[
-                12
-            ].decode("UTF-8")
-            self.link_name_to_index[_name] = _id
+            info = p.getJointInfo(self.obj_id, _id, physicsClientId=self.client_id)
+            joint_name = info[1].decode("UTF-8")
+            link_name = info[12].decode("UTF-8")
+            self.link_name_to_index[link_name] = _id
+
+            # Only store if the joint is one we can control.
+            if info[2] == p.JOINT_REVOLUTE or info[2] == p.JOINT_PRISMATIC:
+                self.jn_to_ix[joint_name] = _id
 
     def render(self, return_prgb=False, link_seg=True):
         if not return_prgb:
@@ -362,67 +367,80 @@ class PMRenderEnv:
             )
             return rgb, depth, seg, P_cam, P_world, P_rgb, pc_seg, segmap
 
-    def set_camera(self, camera_pos: List[int]):
-        self.camera.set_camera_position(camera_pos)
+    def set_camera(
+        self,
+        camera_xyz: Union[Literal["random"], Tuple[float, float, float]],
+    ):
+        if camera_xyz == "random":
+            x, y, z, az, el = sample_az_ele(
+                np.sqrt(8),
+                np.deg2rad(30),
+                np.deg2rad(150),
+                np.deg2rad(30),
+                np.deg2rad(60),
+            )
+            camera_xyz = [x, y, z]
 
-    def randomize_joints(self, joints: Optional[Sequence[str]] = None):
-        if joints is not None:
-            joints_set = set(joints)
-        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
-            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
+        self.camera.set_camera_position(camera_xyz)
 
-            # Skip joint if we are filtering and it's not selected.
-            if joints is not None and jinfo[1].decode("UTF-8") not in joints_set:
-                continue
+    def _get_random_joint_value(self, joint_name: str, openclose=False) -> float:
+        i = self.jn_to_ix[joint_name]
+        jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
+        lower, upper = jinfo[8], jinfo[9]
+        if openclose:
+            angle = [lower, upper][np.random.choice(2)]
+        else:
+            angle = np.random.random() * (upper - lower) + lower
+        return angle
 
-            if jinfo[2] == p.JOINT_REVOLUTE or jinfo[2] == p.JOINT_PRISMATIC:
-                lower, upper = jinfo[8], jinfo[9]
-                angle = np.random.random() * (upper - lower) + lower
-                p.resetJointState(self.obj_id, i, angle, 0, self.client_id)
+    def _get_random_joint_values(self, openclose=False) -> Dict[str, float]:
+        return {
+            k: self._get_random_joint_value(k, openclose) for k in self.jn_to_ix.keys()
+        }
 
-    def randomize_specific_joints(self, joint_list):
-        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
-            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
-            if jinfo[12].decode("UTF-8") in joint_list:
-                lower, upper = jinfo[8], jinfo[9]
-                angle = np.random.random() * (upper - lower) + lower
-                p.resetJointState(self.obj_id, i, angle, 0, self.client_id)
+    def set_joint_angles(
+        self,
+        joints: Union[
+            Literal["random", "random-oc", "open", "closed"],
+            Dict[str, Union[float, Literal["random", "random-oc"]]],
+            None,
+        ] = None,
+    ) -> None:
+        if joints is None:
+            joints = {jn: 0.0 for jn in self.jn_to_ix.keys()}
+        elif joints == "random":
+            joints = self._get_random_joint_values(openclose=False)
+        elif joints == "random-oc":
+            joints = self._get_random_joint_values(openclose=True)
+        elif joints == "open":
+            raise NotImplementedError
+        elif joints == "closed":
+            raise NotImplementedError
+        else:
+            # Default zeros.
+            new_joints = {jn: 0.0 for jn in self.jn_to_ix.keys()}
 
-    def articulate_specific_joints(self, joint_list, amount):
-        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
-            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
-            if jinfo[12].decode("UTF-8") in joint_list:
-                lower, upper = jinfo[8], jinfo[9]
-                angle = amount * (upper - lower) + lower
-                p.resetJointState(self.obj_id, i, angle, 0, self.client_id)
+            # Set the values to either a fixed value or a random one.
+            for k, v in joints.items():
+                if not k in self.jn_to_ix:
+                    raise ValueError(f"invalid joint {k}")
 
-    def randomize_joints_openclose(self, joint_list):
-        randind = np.random.choice([0, 1])
-        # Close: 0
-        # Open: 1
-        self.close_or_open = randind
-        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
-            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
-            if jinfo[12].decode("UTF-8") in joint_list:
-                lower, upper = jinfo[8], jinfo[9]
-                angles = [lower, upper]
-                angle = angles[randind]
-                p.resetJointState(self.obj_id, i, angle, 0, self.client_id)
+                if isinstance(v, float):
+                    # "decide if we need to normalize between 0 and 1"
+                    raise NotImplementedError
+                    new_joints[k] = angle
+                else:
+                    if v == "open" or v == "closed":
+                        raise NotImplementedError
+                    # Randomize, and determine if open/close
+                    new_joints[k] = self._get_random_joint_value(k, v == "random-oc")
+            joints = new_joints
 
-    def set_joint_angles(self, joints: Dict[str, float]):
-        """Sets joint angles, interpolating between lower and upper."""
-        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
-            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
-            joint_name = jinfo[1].decode("UTF-8")
-            # Skip joint if we are filtering and it's not selected.
-            if joint_name not in joints:
-                continue
-
-            # Interpolate between upper and lower.
-            assert 0.0 <= joints[joint_name] <= 1.0
-            lower, upper = jinfo[8], jinfo[9]
-            angle = joints[joint_name] * (upper - lower) + lower
-            p.resetJointState(self.obj_id, i, angle, 0, self.client_id)
+        # Reset the joints.
+        for jn, ja in joints.items():
+            jix = self.jn_to_ix[jn]
+            jv = 0  # joint velocity
+            p.resetJointState(self.obj_id, jix, ja, jv, self.client_id)
 
     def get_joint_angles(self) -> Dict[str, float]:
         angles = {}
@@ -432,23 +450,24 @@ class PMRenderEnv:
             angles[jinfo[1].decode("UTF-8")] = jstate[0]
         return angles
 
-    def randomize_camera(self):
-        x, y, z, az, el = sample_az_ele(
-            np.sqrt(8), np.deg2rad(30), np.deg2rad(150), np.deg2rad(30), np.deg2rad(60)
-        )
-        self.camera.set_camera_position((x, y, z))
 
-
-class PybulletRenderer:
+class PybulletRenderer(PMRenderer):
     def __init__(self):
-        self.__render_env = None
+        self._render_env = None
 
     def render(
         self,
-        obj: PMObject,
-        randomize_joints: Union[Literal[False], Literal["all"], Sequence[str]] = False,
-        randomize_camera: bool = False,
-        set_joints: Union[Literal[False], Sequence[Tuple[str, float]]] = False,
+        pm_obj: PMObject,
+        joints: Union[
+            Literal["random", "random-oc", "open", "closed"],
+            Dict[str, Union[float, Literal["random", "random-oc"]]],
+            None,
+        ] = None,
+        camera_xyz: Union[
+            Literal["random"],
+            Tuple[float, float, float],
+            None,
+        ] = None,
     ) -> PartialPC:
         """Sample a partial pointcloud using the Pybullet GL renderer. Currently only supports
         randomized parameters.
@@ -465,37 +484,33 @@ class PybulletRenderer:
         Returns:
             PartialPC: A big dictionary of things. See PartialPC above for what you get.
         """
-        if self.__render_env is None:
-            self.__render_env = PMRenderEnv(obj.obj_dir.name, str(obj.obj_dir.parent))
+        if self._render_env is None:
+            self._render_env = PMRenderEnv(
+                pm_obj.obj_dir.name, str(pm_obj.obj_dir.parent)
+            )
 
-        if randomize_joints and set_joints:
-            raise ValueError("unable to randomize and set joints")
-        if randomize_joints:
-            if randomize_joints == "all":
-                self.__render_env.randomize_joints()
-            else:
-                self.__render_env.randomize_joints(randomize_joints)
-        if set_joints:
-            self.__render_env.set_joint_angles({jn: ja for jn, ja in set_joints})
-        if randomize_camera:
-            self.__render_env.randomize_camera()
+        self._render_env.set_joint_angles(joints)
 
-        rgb, depth, seg, P_cam, P_world, pc_seg, segmap = self.__render_env.render()
+        if camera_xyz is not None:
+            self._render_env.set_camera(camera_xyz)
+
+        rgb, depth, seg, P_cam, P_world, pc_seg, segmap = self._render_env.render()
 
         # Reindex the segmentation.
         pc_seg_obj = np.ones_like(pc_seg) * -1
         for k, (body, link) in segmap.items():
-            if body == self.__render_env.obj_id:
+            if body == self._render_env.obj_id:
                 ixs = pc_seg == k
                 pc_seg_obj[ixs] = link
 
         return {
+            "id": pm_obj.obj_id,
             "pos": P_world,
             "seg": pc_seg_obj,
             "frame": "world",
-            "T_world_cam": self.__render_env.camera.T_world2cam,
-            "T_world_base": np.copy(self.__render_env.T_world_base),
+            "T_world_cam": self._render_env.camera.T_world2cam,
+            "T_world_base": np.copy(self._render_env.T_world_base),
             # "proj_matrix": None,
-            "labelmap": self.__render_env.link_name_to_index,
-            "angles": self.__render_env.get_joint_angles(),
+            "labelmap": self._render_env.link_name_to_index,
+            "angles": self._render_env.get_joint_angles(),
         }

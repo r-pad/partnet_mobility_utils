@@ -1,7 +1,11 @@
-from typing import Dict, List, Literal, TypedDict
+import abc
+from abc import abstractmethod
+from typing import Dict, List, Literal, Tuple, TypedDict, Union
 
 import numpy as np
 import numpy.typing as npt
+
+from partnet_mobility_utils.data import PMObject
 
 
 class PartialPC(TypedDict):
@@ -12,6 +16,7 @@ class PartialPC(TypedDict):
         seg: segmentation
     """
 
+    id: str
     pos: npt.NDArray[np.float32]
     seg: npt.NDArray[np.uint]
     frame: Literal["world", "camera"]
@@ -29,3 +34,22 @@ class FullPCData(TypedDict):
     ins: List
     sem: List
     art: List
+
+
+class PMRenderer(abc.ABC):
+    @abstractmethod
+    def render(
+        self,
+        pm_obj: PMObject,
+        joints: Union[
+            Literal["random", "random-oc", "open", "closed"],
+            Dict[str, Union[float, Literal["random", "random-oc"]]],
+            None,
+        ] = None,
+        camera_xyz: Union[
+            Literal["random"],
+            Tuple[float, float, float],
+            None,
+        ] = None,
+    ):
+        ...
