@@ -51,5 +51,5 @@ class PMRenderer(abc.ABC):
             Tuple[float, float, float],
             None,
         ] = None,
-    ):
+    ) -> PartialPC:
         ...

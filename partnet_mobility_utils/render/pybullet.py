@@ -379,7 +379,7 @@ class PMRenderEnv:
                 np.deg2rad(30),
                 np.deg2rad(60),
             )
-            camera_xyz = [x, y, z]
+            camera_xyz = (x, y, z)
 
         self.camera.set_camera_position(camera_xyz)
 
@@ -388,7 +388,7 @@ class PMRenderEnv:
         jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
         lower, upper = jinfo[8], jinfo[9]
         if openclose:
-            angle = [lower, upper][np.random.choice(2)]
+            angle: float = [lower, upper][np.random.choice(2)]
         else:
             angle = np.random.random() * (upper - lower) + lower
         return angle
@@ -407,11 +407,11 @@ class PMRenderEnv:
         ] = None,
     ) -> None:
         if joints is None:
-            joints = {jn: 0.0 for jn in self.jn_to_ix.keys()}
+            joint_dict = {jn: 0.0 for jn in self.jn_to_ix.keys()}
         elif joints == "random":
-            joints = self._get_random_joint_values(openclose=False)
+            joint_dict = self._get_random_joint_values(openclose=False)
         elif joints == "random-oc":
-            joints = self._get_random_joint_values(openclose=True)
+            joint_dict = self._get_random_joint_values(openclose=True)
         elif joints == "open":
             raise NotImplementedError
         elif joints == "closed":
@@ -428,16 +428,16 @@ class PMRenderEnv:
                 if isinstance(v, float):
                     # "decide if we need to normalize between 0 and 1"
                     raise NotImplementedError
-                    new_joints[k] = angle
+                    # new_joints[k] = angle
                 else:
                     if v == "open" or v == "closed":
                         raise NotImplementedError
                     # Randomize, and determine if open/close
                     new_joints[k] = self._get_random_joint_value(k, v == "random-oc")
-            joints = new_joints
+            joint_dict = new_joints  # type: ignore
 
         # Reset the joints.
-        for jn, ja in joints.items():
+        for jn, ja in joint_dict.items():
             jix = self.jn_to_ix[jn]
             jv = 0  # joint velocity
             p.resetJointState(self.obj_id, jix, ja, jv, self.client_id)

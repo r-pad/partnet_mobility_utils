@@ -2,7 +2,7 @@ import copy
 import logging
 import typing
 from pathlib import Path
-from typing import Dict, Iterable, List, Literal, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Literal, Tuple, Union
 
 from partnet_mobility_utils.data import PMObject
 from partnet_mobility_utils.render import PartialPC, PMRenderer
@@ -88,7 +88,7 @@ class PCDataset:
         obj_id: str,
         joints: Union[
             Literal["random"],
-            Sequence[Union[float, Literal["random"]]],
+            Dict[str, Union[float, Literal["random", "random-oc"]]],
             None,
         ] = None,
         camera_xyz: Union[
@@ -99,10 +99,10 @@ class PCDataset:
     ) -> PartialPC:
         if obj_id not in self.renderers:
             if self.renderer_type == "pybullet":
-                renderer = PybulletRenderer()
+                new_renderer = PybulletRenderer()
             else:
                 raise NotImplementedError("not yet implemented")
-            self.renderers[obj_id] = renderer
+            self.renderers[obj_id] = new_renderer
         renderer = self.renderers[obj_id]
 
         pc_render = renderer.render(
