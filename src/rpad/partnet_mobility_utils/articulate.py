@@ -7,8 +7,8 @@ import numpy.typing as npt
 import trimesh
 from scipy.spatial.transform import Rotation
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.urdf import Joint
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.urdf import Joint
 
 
 def fk(chain: List[Joint], joint_angles: Sequence[float]) -> np.ndarray:

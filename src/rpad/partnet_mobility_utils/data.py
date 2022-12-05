@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Optional, Sequence, Tuple, Union, cast
 
-from partnet_mobility_utils.urdf import PMTree
+from rpad.partnet_mobility_utils.urdf import PMTree
 
 JOINT_TYPES = {"slider", "free", "hinge", "heavy", "static", "slider+"}
 JointType = Literal["slider", "free", "hinge", "heavy", "static", "slider+"]

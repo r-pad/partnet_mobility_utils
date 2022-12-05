@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render.pybullet import PybulletRenderer
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render.pybullet import PybulletRenderer
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 

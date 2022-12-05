@@ -4,7 +4,7 @@ from pathlib import Path
 
 import typer
 
-from partnet_mobility_utils.dataset import read_ids, write_ids
+from rpad.partnet_mobility_utils.dataset import read_ids, write_ids
 
 
 def main(split_path: Path, out_dir: Path = "partnet_mobility_utils/data_lists/umpnet"):

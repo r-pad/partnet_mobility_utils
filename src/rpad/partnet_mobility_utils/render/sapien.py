@@ -1,6 +1,6 @@
 import numpy as np
 
-from partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.data import PMObject
 
 try:
     import sapien

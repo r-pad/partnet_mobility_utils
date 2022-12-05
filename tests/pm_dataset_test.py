@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from partnet_mobility_utils.dataset import PCDataset
+from rpad.partnet_mobility_utils.dataset import PCDataset
 
 PM_DATASET_EXISTS = os.path.exists(
     os.path.expanduser("~/datasets/partnet-mobility/raw")

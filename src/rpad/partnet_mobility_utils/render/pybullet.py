@@ -7,8 +7,8 @@ from typing import Dict, List, Literal, Optional, Tuple, Union
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render import PartialPC, PMRenderer
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render import PartialPC, PMRenderer
 
 try:
     import pybullet as p

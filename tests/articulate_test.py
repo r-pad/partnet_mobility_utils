@@ -2,11 +2,11 @@ from pathlib import Path
 
 import numpy as np
 
-from partnet_mobility_utils.articulate import articulate_joint
+from rpad.partnet_mobility_utils.articulate import articulate_joint
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render.pybullet import PybulletRenderer
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render.pybullet import PybulletRenderer
 
 
 def test_articulation():

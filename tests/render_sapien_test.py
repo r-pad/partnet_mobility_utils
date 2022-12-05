@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.data import PMObject
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 
@@ -15,7 +15,7 @@ PLATFORM = sys.platform
 # )
 @pytest.mark.skip()
 def test_render():
-    from partnet_mobility_utils.render.sapien import SAPIENRenderer
+    from rpad.partnet_mobility_utils.render.sapien import SAPIENRenderer
 
     obj = PMObject(TESTDATA_DIR / "100809")
     renderer = SAPIENRenderer()

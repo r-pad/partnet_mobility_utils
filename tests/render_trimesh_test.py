@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render.trimesh import TrimeshRenderer
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render.trimesh import TrimeshRenderer
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 

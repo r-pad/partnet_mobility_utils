@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.data import PMObject
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 

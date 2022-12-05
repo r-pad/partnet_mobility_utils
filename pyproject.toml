@@ -1,5 +1,5 @@
 [project]
-name = "partnet_mobility_utils"
+name = "rpad-partnet-mobility-utils"
 version = "0.1.0"
 description = "Partnet-Mobility Utils"
 readme = "README.md"
@@ -46,12 +46,12 @@ sapien = [
   "sapien",
 ]
 notebooks = [
-  "visualize_3d @ git+https://github.com/r-pad/visualize_3d",
+  "rpad-visualize-3d @ git+https://github.com/r-pad/visualize_3d",
 ]
 
-# This is required to allow us to have notebooks/ at the top level.
-[tool.setuptools]
-packages = ["partnet_mobility_utils"]
+# Make setuptools only look in the src folder.
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.isort]
 profile = "black"
@@ -60,6 +60,9 @@ profile = "black"
 python_version = 3.8
 warn_return_any = true
 warn_unused_configs = true
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = [

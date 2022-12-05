@@ -5,8 +5,8 @@ import numpy as np
 import trimesh
 from scipy.spatial.transform import Rotation
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render import FullPCData
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render import FullPCData
 
 
 class TrimeshRenderer:

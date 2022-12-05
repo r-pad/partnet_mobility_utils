@@ -4,9 +4,9 @@ import typing
 from pathlib import Path
 from typing import Dict, Iterable, List, Literal, Tuple, Union
 
-from partnet_mobility_utils.data import PMObject
-from partnet_mobility_utils.render import PartialPC, PMRenderer
-from partnet_mobility_utils.render.pybullet import PybulletRenderer
+from rpad.partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.render import PartialPC, PMRenderer
+from rpad.partnet_mobility_utils.render.pybullet import PybulletRenderer
 
 
 def write_ids(path: Union[str, Path], objs: Iterable[Tuple[str, str]]):

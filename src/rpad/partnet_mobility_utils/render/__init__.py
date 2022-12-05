@@ -5,7 +5,7 @@ from typing import Dict, List, Literal, Tuple, TypedDict, Union
 import numpy as np
 import numpy.typing as npt
 
-from partnet_mobility_utils.data import PMObject
+from rpad.partnet_mobility_utils.data import PMObject
 
 
 class PartialPC(TypedDict):
