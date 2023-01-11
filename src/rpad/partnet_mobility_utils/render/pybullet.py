@@ -18,10 +18,13 @@ except ImportError as exc:
     raise ImportError from exc
 
 
-def sample_az_ele(radius, az_lo, az_hi, ele_lo, ele_hi):
+def sample_az_ele(radius, az_lo, az_hi, ele_lo, ele_hi, seed=None):
     """Sample random azimuth elevation pair and convert to cartesian."""
-    azimuth = np.random.uniform(az_lo, az_hi)
-    elevation = np.random.uniform(ele_lo, ele_hi)
+
+    rng = np.random.default_rng(seed)
+
+    azimuth = rng.uniform(az_lo, az_hi)
+    elevation = rng.uniform(ele_lo, ele_hi)
 
     x = -radius * np.cos(elevation) * np.sin(azimuth)
     z = radius * np.sin(elevation) * np.sin(azimuth)
@@ -43,7 +46,7 @@ def calc_rot(v1, v2):
     return quat
 
 
-def randomize_camera(env):
+def randomize_camera(env, seed=None):
     """Randomize random camera viewpoints"""
     target = env.cabinet.get_pose().p
     can_cam_loc = env.cameras[1].sub_cameras[0].get_pose().p
@@ -370,6 +373,7 @@ class PMRenderEnv:
     def set_camera(
         self,
         camera_xyz: Union[Literal["random"], Tuple[float, float, float]],
+        seed: Optional[int] = None,
     ):
         if camera_xyz == "random":
             x, y, z, az, el = sample_az_ele(
@@ -378,24 +382,30 @@ class PMRenderEnv:
                 np.deg2rad(150),
                 np.deg2rad(30),
                 np.deg2rad(60),
+                seed=seed,
             )
             camera_xyz = (x, y, z)
 
         self.camera.set_camera_position(camera_xyz)
 
-    def _get_random_joint_value(self, joint_name: str, openclose=False) -> float:
+    def _get_random_joint_value(
+        self, joint_name: str, openclose=False, seed=None
+    ) -> float:
+        rng = np.random.default_rng(seed)
+
         i = self.jn_to_ix[joint_name]
         jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
         lower, upper = jinfo[8], jinfo[9]
         if openclose:
-            angle: float = [lower, upper][np.random.choice(2)]
+            angle: float = [lower, upper][rng.choice(2)]
         else:
-            angle = np.random.random() * (upper - lower) + lower
+            angle = rng.random() * (upper - lower) + lower
         return angle
 
-    def _get_random_joint_values(self, openclose=False) -> Dict[str, float]:
+    def _get_random_joint_values(self, openclose=False, seed=None) -> Dict[str, float]:
         return {
-            k: self._get_random_joint_value(k, openclose) for k in self.jn_to_ix.keys()
+            k: self._get_random_joint_value(k, openclose, seed)
+            for k in self.jn_to_ix.keys()
         }
 
     def set_joint_angles(
@@ -405,13 +415,14 @@ class PMRenderEnv:
             Dict[str, Union[float, Literal["random", "random-oc"]]],
             None,
         ] = None,
+        seed=None,
     ) -> None:
         if joints is None:
             joint_dict = {jn: 0.0 for jn in self.jn_to_ix.keys()}
         elif joints == "random":
-            joint_dict = self._get_random_joint_values(openclose=False)
+            joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
         elif joints == "random-oc":
-            joint_dict = self._get_random_joint_values(openclose=True)
+            joint_dict = self._get_random_joint_values(openclose=True, seed=seed)
         elif joints == "open":
             raise NotImplementedError
         elif joints == "closed":
@@ -433,7 +444,9 @@ class PMRenderEnv:
                     if v == "open" or v == "closed":
                         raise NotImplementedError
                     # Randomize, and determine if open/close
-                    new_joints[k] = self._get_random_joint_value(k, v == "random-oc")
+                    new_joints[k] = self._get_random_joint_value(
+                        k, v == "random-oc", seed=seed
+                    )
             joint_dict = new_joints  # type: ignore
 
         # Reset the joints.
@@ -468,6 +481,7 @@ class PybulletRenderer(PMRenderer):
             Tuple[float, float, float],
             None,
         ] = None,
+        seed: Optional[int] = None,
     ) -> PartialPC:
         """Sample a partial pointcloud using the Pybullet GL renderer. Currently only supports
         randomized parameters.
@@ -489,10 +503,13 @@ class PybulletRenderer(PMRenderer):
                 pm_obj.obj_dir.name, str(pm_obj.obj_dir.parent)
             )
 
-        self._render_env.set_joint_angles(joints)
+        rng = np.random.default_rng(seed)
+        seed1, seed2 = rng.bit_generator._seed_seq.spawn(2)  # type: ignore
+
+        self._render_env.set_joint_angles(joints, seed=seed1)
 
         if camera_xyz is not None:
-            self._render_env.set_camera(camera_xyz)
+            self._render_env.set_camera(camera_xyz, seed=seed2)
 
         rgb, depth, seg, P_cam, P_world, pc_seg, segmap = self._render_env.render()
 

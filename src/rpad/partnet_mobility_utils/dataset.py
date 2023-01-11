@@ -2,7 +2,7 @@ import copy
 import logging
 import typing
 from pathlib import Path
-from typing import Dict, Iterable, List, Literal, Tuple, Union
+from typing import Dict, Iterable, List, Literal, Optional, Tuple, Union
 
 from rpad.partnet_mobility_utils.data import PMObject
 from rpad.partnet_mobility_utils.render import PartialPC, PMRenderer
@@ -96,6 +96,7 @@ class PCDataset:
             Tuple[float, float, float],
             None,
         ] = None,
+        seed: Optional[int] = None,
     ) -> PartialPC:
         if obj_id not in self.renderers:
             if self.renderer_type == "pybullet":
@@ -106,7 +107,10 @@ class PCDataset:
         renderer = self.renderers[obj_id]
 
         pc_render = renderer.render(
-            pm_obj=self.pm_objs[obj_id], joints=joints, camera_xyz=camera_xyz
+            pm_obj=self.pm_objs[obj_id],
+            joints=joints,
+            camera_xyz=camera_xyz,
+            seed=seed,
         )
 
         return pc_render

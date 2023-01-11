@@ -1,6 +1,6 @@
 import abc
 from abc import abstractmethod
-from typing import Dict, List, Literal, Tuple, TypedDict, Union
+from typing import Dict, List, Literal, Optional, Tuple, TypedDict, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -51,5 +51,6 @@ class PMRenderer(abc.ABC):
             Tuple[float, float, float],
             None,
         ] = None,
+        seed: Optional[int] = None,
     ) -> PartialPC:
         ...
