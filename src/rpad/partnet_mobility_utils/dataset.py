@@ -30,6 +30,9 @@ SUFFICIENT = {obj[0] for obj in read_ids(__parent / "data_lists" / "extra_objs.t
 DEFAULT_OBJS = list(WELL_FORMED.union(SUFFICIENT))
 
 UMPNET_DIR = Path(__file__).parent / "data_lists" / "umpnet"
+UMPNET_TRAIN_TRAIN_OBJS = read_ids(UMPNET_DIR / "train_train.txt")
+UMPNET_TRAIN_TEST_OBJS = read_ids(UMPNET_DIR / "train_test.txt")
+UMPNET_TEST_OBJS = read_ids(UMPNET_DIR / "test.txt")
 
 
 def get_ids_by_class(class_name: str, filter_valid: bool = True) -> List[str]:
