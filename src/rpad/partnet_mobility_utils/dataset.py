@@ -33,6 +33,9 @@ UMPNET_DIR = Path(__file__).parent / "data_lists" / "umpnet"
 UMPNET_TRAIN_TRAIN_OBJS = read_ids(UMPNET_DIR / "train_train.txt")
 UMPNET_TRAIN_TEST_OBJS = read_ids(UMPNET_DIR / "train_test.txt")
 UMPNET_TEST_OBJS = read_ids(UMPNET_DIR / "test.txt")
+UMPNET_TRAIN_TRAIN_OBJ_IDS = [obj[0] for obj in UMPNET_TRAIN_TRAIN_OBJS]
+UMPNET_TRAIN_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TRAIN_TEST_OBJS]
+UMPNET_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TEST_OBJS]
 
 
 def get_ids_by_class(class_name: str, filter_valid: bool = True) -> List[str]:
