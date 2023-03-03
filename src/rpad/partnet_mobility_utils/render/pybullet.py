@@ -460,6 +460,14 @@ class PMRenderEnv:
             angles[jinfo[1].decode("UTF-8")] = jstate[0]
         return angles
 
+    def get_joint_ranges(self) -> Dict[str, Tuple[float, float]]:
+        ranges = {}
+        for i in range(p.getNumJoints(self.obj_id, self.client_id)):
+            jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
+            lower, upper = jinfo[8], jinfo[9]
+            ranges[jinfo[1].decode("UTF-8")] = lower, upper
+        return ranges
+
 
 class PybulletRenderer(PMRenderer):
     def __init__(self):
