@@ -437,9 +437,7 @@ class PMRenderEnv:
                     raise ValueError(f"invalid joint {k}")
 
                 if isinstance(v, float):
-                    # "decide if we need to normalize between 0 and 1"
-                    raise NotImplementedError
-                    # new_joints[k] = angle
+                    new_joints[k] = v
                 else:
                     if v == "open" or v == "closed":
                         raise NotImplementedError
