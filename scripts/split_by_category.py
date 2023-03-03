@@ -13,7 +13,6 @@ def main(root: Path, outdir: Path):
 
     all_cats = defaultdict(list)
     for odir in sorted(root.iterdir()):
-
         obj = PMObject(odir)
         obj_id = obj.obj_id
         model_cat = obj.category

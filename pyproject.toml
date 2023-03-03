@@ -26,9 +26,9 @@ build-backend = "setuptools.build_meta"
 [project.optional-dependencies]
 develop = [
   "pytest",
-  "black >= 22.3.0",
+  "black >= 23.0",
   "isort",
-  "mypy",
+  "mypy >= 1.0",
   "pylint",
   "autoflake",
   "pre-commit",

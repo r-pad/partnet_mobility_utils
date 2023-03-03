@@ -113,7 +113,6 @@ def isnotebook():
 
 @contextmanager
 def suppress_stdout():
-
     fd = sys.stdout.fileno()
 
     def _redirect_stdout(to):

@@ -16,7 +16,6 @@ def main(root: Path, outdir: Path):
     all_ids = []
     all_cats = set()
     for odir in sorted(root.iterdir()):
-
         obj = PMObject(odir)
         obj_id = obj.obj_id
         model_cat = obj.category

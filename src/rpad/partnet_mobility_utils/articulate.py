@@ -21,7 +21,6 @@ def fk(chain: List[Joint], joint_angles: Sequence[float]) -> np.ndarray:
 
         T_articulation: np.ndarray = np.eye(4)
         if joint.type == "revolute" or joint.type == "continuous":
-
             theta = angle
             if theta != 0.0:
                 axis = (

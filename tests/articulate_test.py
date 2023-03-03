@@ -10,7 +10,6 @@ TESTDATA_DIR = Path(__file__).parent / "testdata"
 
 
 def test_articulation():
-
     obj = PMObject(TESTDATA_DIR / "7179")
     assert obj.obj_id == "7179"
     assert obj.category == "Oven"
