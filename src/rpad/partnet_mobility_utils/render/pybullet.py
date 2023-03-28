@@ -2,9 +2,10 @@ import functools
 import os
 import sys
 from contextlib import contextmanager
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 import numpy as np
+from rpad.core.distributed import NPSeed
 from scipy.spatial.transform import Rotation as R
 
 from rpad.partnet_mobility_utils.data import PMObject
@@ -372,7 +373,7 @@ class PMRenderEnv:
     def set_camera(
         self,
         camera_xyz: Union[Literal["random"], Tuple[float, float, float]],
-        seed: Optional[int] = None,
+        seed: Optional[NPSeed] = None,
     ):
         if camera_xyz == "random":
             x, y, z, az, el = sample_az_ele(
@@ -411,7 +412,7 @@ class PMRenderEnv:
         self,
         joints: Union[
             Literal["random", "random-oc", "open", "closed"],
-            Dict[str, Union[float, Literal["random", "random-oc"]]],
+            Mapping[str, Union[float, Literal["random", "random-oc"]]],
             None,
         ] = None,
         seed=None,
@@ -467,6 +468,9 @@ class PMRenderEnv:
             lower, upper = jinfo[8], jinfo[9]
             ranges[jinfo[1].decode("UTF-8")] = lower, upper
         return ranges
+
+    def close(self):
+        p.disconnect(self.client_id)
 
 
 class PybulletRenderer(PMRenderer):
