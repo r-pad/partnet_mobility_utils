@@ -94,7 +94,7 @@ class PMRenderEnv:
                 pluginId = p.loadPlugin(pluginPath=egl.get_filename(),postFix="_eglRendererPlugin",physicsClientId=self.client_id)
             else:
                 pluginId = p.loadPlugin("eglRendererPlugin", physicsClientId=self.client_id)
-            logging.info("pluginId=",pluginId)
+            logging.info(f"pluginId={pluginId}")
 
         # Add in a plane.
         if with_plane:
