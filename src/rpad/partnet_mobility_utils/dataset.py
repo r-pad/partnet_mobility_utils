@@ -119,7 +119,7 @@ class PCDataset:
             joints=joints,
             camera_xyz=camera_xyz,
             seed=seed,
-            use_egl=use_egl,
+            use_egl=self.use_egl,
         )
 
         return pc_render
