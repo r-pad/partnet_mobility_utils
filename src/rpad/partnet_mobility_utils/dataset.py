@@ -56,6 +56,7 @@ class PCDataset:
         root: Union[str, Path],
         split: Union[AVAILABLE_DATASET, List[str]],
         renderer: Literal["pybullet", "sapien", "trimesh"] = "pybullet",
+        use_egl: bool = False,
     ):
         if isinstance(split, str):
             if split == "all":
@@ -88,6 +89,7 @@ class PCDataset:
         }
         self.renderers: Dict[str, PMRenderer] = {}
         self.renderer_type = renderer
+        self.use_egl = use_egl
 
     def get(
         self,
@@ -117,6 +119,7 @@ class PCDataset:
             joints=joints,
             camera_xyz=camera_xyz,
             seed=seed,
+            use_egl=use_egl,
         )
 
         return pc_render
