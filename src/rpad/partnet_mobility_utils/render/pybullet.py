@@ -281,6 +281,7 @@ class PybulletRenderer(PMRenderer):
             None,
         ] = None,
         seed: Optional[int] = None,
+        use_egl: bool = False,
     ) -> PartialPC:
         """Sample a partial pointcloud using the Pybullet GL renderer. Currently only supports
         randomized parameters.
@@ -299,7 +300,7 @@ class PybulletRenderer(PMRenderer):
         """
         if self._render_env is None:
             self._render_env = PMRenderEnv(
-                pm_obj.obj_dir.name, str(pm_obj.obj_dir.parent)
+                pm_obj.obj_dir.name, str(pm_obj.obj_dir.parent), use_egl=use_egl
             )
 
         rng = np.random.default_rng(seed)
