@@ -1,4 +1,6 @@
+import logging
 import os
+import pkgutil
 from typing import Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 import numpy as np
@@ -81,9 +83,18 @@ class PMRenderEnv:
         camera_pos: List = [-2, 0, 2],
         gui: bool = False,
         with_plane: bool = True,
+        use_egl: bool = False,
     ):
         self.with_plane = with_plane
         self.client_id = p.connect(p.GUI if gui else p.DIRECT)
+
+        if use_egl:
+            egl = pkgutil.get_loader('eglRenderer')
+            if (egl):
+                pluginId = p.loadPlugin(pluginPath=egl.get_filename(),postFix="_eglRendererPlugin",physicsClientId=self.client_id)
+            else:
+                pluginId = p.loadPlugin("eglRendererPlugin", physicsClientId=self.client_id)
+            logging.info("pluginId=",pluginId)
 
         # Add in a plane.
         if with_plane:
