@@ -26,6 +26,7 @@ def sample_az_ele(radius, az_lo, az_hi, ele_lo, ele_hi, seed=None):
 
     azimuth = rng.uniform(az_lo, az_hi)
     elevation = rng.uniform(ele_lo, ele_hi)
+    # print(azimuth, elevation)
 
     x = -radius * np.cos(elevation) * np.sin(azimuth)
     z = radius * np.sin(elevation) * np.sin(azimuth)
@@ -313,6 +314,7 @@ class PMRenderEnv:
                 obj_urdf,
                 useFixedBase=True,
                 # flags=p.URDF_MAINTAIN_LINK_ORDER,
+                # flags=p.URDF_USE_SELF_COLLISION,
                 physicsClientId=self.client_id,
             )
 
@@ -322,6 +324,7 @@ class PMRenderEnv:
                     obj_urdf,
                     useFixedBase=True,
                     # flags=p.URDF_MAINTAIN_LINK_ORDER,
+                    # flags=p.URDF_USE_SELF_COLLISION,
                     physicsClientId=self.client_id,
                 )
 
@@ -385,48 +388,71 @@ class PMRenderEnv:
                 seed=seed,
             )
             camera_xyz = (x, y, z)
+            # print("random camera position: ", x, y, z)
 
         self.camera.set_camera_position(camera_xyz)
 
     def _get_random_joint_value(
-        self, joint_name: str, openclose=False, seed=None
+        self, joint_name: str, openclose=False, seed=None, closed_ratio=-1
     ) -> float:
         rng = np.random.default_rng(seed)
 
         i = self.jn_to_ix[joint_name]
         jinfo = p.getJointInfo(self.obj_id, i, self.client_id)
         lower, upper = jinfo[8], jinfo[9]
-        if openclose:
-            angle: float = [lower, upper][rng.choice(2)]
-        else:
+        if openclose:  # needs specific setting about open, close (fully open or fully close, fully closed, half half)
+            angle: float = [lower, upper][rng.choice(2)]  # open or close
+            if closed_ratio == 1:   # all closed
+                angle: float = lower
+            elif closed_ratio == 0.5:  # half closed half random
+                random_open = rng.random() * (upper - lower) + lower
+                angle: float = [lower, random_open][rng.choice(2)]
+
+        else:   # randomly open
             angle = rng.random() * (upper - lower) + lower
         return angle
 
-    def _get_random_joint_values(self, openclose=False, seed=None) -> Dict[str, float]:
+    def _get_one_random_joint_values(self, openclose=False, seed=None, closed_ratio=-1) -> Dict[str, float]:
+        # randomly open one joint.
+        joint_idx = np.random.randint(len(self.jn_to_ix))
+        joint_values_dict = {
+            k: self._get_random_joint_value(k, openclose if idx == joint_idx else True, seed, closed_ratio if idx == joint_idx else 1.0)
+            for idx, k in enumerate(self.jn_to_ix.keys())
+        }
+        return joint_values_dict
+
+    def _get_random_joint_values(self, openclose=False, seed=None, closed_ratio=-1) -> Dict[str, float]:
         return {
-            k: self._get_random_joint_value(k, openclose, seed)
+            k: self._get_random_joint_value(k, openclose, seed, closed_ratio)
             for k in self.jn_to_ix.keys()
         }
 
     def set_joint_angles(
         self,
         joints: Union[
-            Literal["random", "random-oc", "open", "closed"],
-            Mapping[str, Union[float, Literal["random", "random-oc"]]],
+            Literal["random", "random-oc", "open", "closed", "fully-closed", "half-half"],
+            Mapping[str, Union[float, Literal["random", "random-oc", "fully-closed", "half-half"]]],
             None,
         ] = None,
         seed=None,
     ) -> None:
+        # print("set joint value")
         if joints is None:
             joint_dict = {jn: 0.0 for jn in self.jn_to_ix.keys()}
         elif joints == "random":
-            joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
+            # print("random!!!!")
+            # joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
+            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed)
         elif joints == "random-oc":
             joint_dict = self._get_random_joint_values(openclose=True, seed=seed)
         elif joints == "open":
             raise NotImplementedError
         elif joints == "closed":
             raise NotImplementedError
+        elif joints == "fully-closed":
+            joint_dict = self._get_random_joint_values(openclose=True, seed=seed, closed_ratio=1.0)
+        elif joints == "half-half":
+            joint_dict = self._get_random_joint_values(openclose=True, seed=seed, closed_ratio=0.5)
         else:
             # Default zeros.
             new_joints = {jn: 0.0 for jn in self.jn_to_ix.keys()}

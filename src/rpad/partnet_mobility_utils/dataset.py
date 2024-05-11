@@ -37,6 +37,15 @@ UMPNET_TRAIN_TRAIN_OBJ_IDS = [obj[0] for obj in UMPNET_TRAIN_TRAIN_OBJS]
 UMPNET_TRAIN_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TRAIN_TEST_OBJS]
 UMPNET_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TEST_OBJS]
 
+# # (lys) Added for toy dataset training
+# UMPNET_TOY_DIR = Path(__file__).parent / "data_lists" / "umpnet"
+# UMPNET_TOY_TRAIN_TRAIN_OBJS = read_ids(UMPNET_TOY_DIR / "train_train.txt")
+# UMPNET_TOY_TRAIN_TEST_OBJS = read_ids(UMPNET_TOY_DIR / "train_test.txt")
+# UMPNET_TOY_TEST_OBJS = read_ids(UMPNET_TOY_DIR / "test.txt")
+# UMPNET_TOY_TRAIN_TRAIN_OBJ_IDS = [obj[0] for obj in UMPNET_TOY_TRAIN_TRAIN_OBJS]
+# UMPNET_TOY_TRAIN_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TOY_TRAIN_TEST_OBJS]
+# UMPNET_TOY_TEST_OBJ_IDS = [obj[0] for obj in UMPNET_TOY_TEST_OBJS]
+
 
 def get_ids_by_class(class_name: str, filter_valid: bool = True) -> List[str]:
     ids = read_ids(Path(__file__).parent / "data_lists" / f"{class_name}.txt")
@@ -44,7 +53,8 @@ def get_ids_by_class(class_name: str, filter_valid: bool = True) -> List[str]:
 
 
 AVAILABLE_DATASET = Literal[
-    "all", "umpnet-train-train", "umpnet-train-test", "umpnet-test"
+    "all", "umpnet-train-train", "umpnet-train-test", 
+    # "umpnet-test", "umpnet-toy-train-train", "umpnet-toy-train-test", "umpnet-toy-test"  # (lys) Added for toy dataset training
 ]
 
 
@@ -76,6 +86,7 @@ class PCDataset:
         def_objs = set(DEFAULT_OBJS)
         for id in self._ids:
             if id not in def_objs:
+                breakpoint()
                 logging.warning(f"{id} is not well-formed, excluding...")
                 raise ValueError("BDADAD")
             else:
@@ -94,7 +105,7 @@ class PCDataset:
         obj_id: str,
         joints: Union[
             Literal["random"],
-            Dict[str, Union[float, Literal["random", "random-oc"]]],
+            Dict[str, Union[float, Literal["random", "random-oc", "fully-closed", "half-half"]]],
             None,
         ] = None,
         camera_xyz: Union[
