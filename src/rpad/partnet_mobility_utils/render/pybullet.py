@@ -412,9 +412,12 @@ class PMRenderEnv:
             angle = rng.random() * (upper - lower) + lower
         return angle
 
-    def _get_one_random_joint_values(self, openclose=False, seed=None, closed_ratio=-1) -> Dict[str, float]:
+    def _get_one_random_joint_values(self, openclose=False, seed=None, closed_ratio=-1, random_joint_id=None) -> Dict[str, float]:
         # randomly open one joint.
-        joint_idx = np.random.randint(len(self.jn_to_ix))
+        if random_joint_id is None:
+            joint_idx = np.random.randint(len(self.jn_to_ix))
+        else:
+            joint_idx = random_joint_id
         joint_values_dict = {
             k: self._get_random_joint_value(k, openclose if idx == joint_idx else True, seed, closed_ratio if idx == joint_idx else 1.0)
             for idx, k in enumerate(self.jn_to_ix.keys())
@@ -435,6 +438,7 @@ class PMRenderEnv:
             None,
         ] = None,
         seed=None,
+        random_joint_id=None,
     ) -> None:
         # print("set joint value")
         if joints is None:
@@ -442,7 +446,7 @@ class PMRenderEnv:
         elif joints == "random":
             # print("random!!!!")
             # joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
-            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed)
+            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed, random_joint_id=random_joint_id), 
         elif joints == "random-oc":
             joint_dict = self._get_random_joint_values(openclose=True, seed=seed)
         elif joints == "open":
