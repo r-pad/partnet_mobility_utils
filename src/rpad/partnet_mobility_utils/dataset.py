@@ -114,6 +114,7 @@ class PCDataset:
             None,
         ] = None,
         seed: Optional[int] = None,
+        random_joint_id = None,
     ) -> PartialPC:
         if obj_id not in self.renderers:
             if self.renderer_type == "pybullet":
@@ -128,6 +129,7 @@ class PCDataset:
             joints=joints,
             camera_xyz=camera_xyz,
             seed=seed,
+            random_joint_id=random_joint_id
         )
 
         return pc_render

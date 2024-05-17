@@ -415,11 +415,14 @@ class PMRenderEnv:
     def _get_one_random_joint_values(self, openclose=False, seed=None, closed_ratio=-1, random_joint_id=None) -> Dict[str, float]:
         # randomly open one joint.
         if random_joint_id is None:
-            joint_idx = np.random.randint(len(self.jn_to_ix))
+            joint_idx = list(self.jn_to_ix.keys())[np.random.randint(len(self.jn_to_ix))]
         else:
             joint_idx = random_joint_id
+
+
         joint_values_dict = {
-            k: self._get_random_joint_value(k, openclose if idx == joint_idx else True, seed, closed_ratio if idx == joint_idx else 1.0)
+            # k: self._get_random_joint_value(k, openclose if idx == joint_idx else True, seed, closed_ratio if idx == joint_idx else 1.0)
+            k: self._get_random_joint_value(k, openclose if k == joint_idx else True, seed, closed_ratio if k == joint_idx else 1.0)
             for idx, k in enumerate(self.jn_to_ix.keys())
         }
         return joint_values_dict
@@ -444,9 +447,8 @@ class PMRenderEnv:
         if joints is None:
             joint_dict = {jn: 0.0 for jn in self.jn_to_ix.keys()}
         elif joints == "random":
-            # print("random!!!!")
             # joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
-            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed, random_joint_id=random_joint_id), 
+            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed, random_joint_id=random_joint_id)
         elif joints == "random-oc":
             joint_dict = self._get_random_joint_values(openclose=True, seed=seed)
         elif joints == "open":
@@ -521,6 +523,7 @@ class PybulletRenderer(PMRenderer):
             None,
         ] = None,
         seed: Optional[int] = None,
+        random_joint_id = None,
     ) -> PartialPC:
         """Sample a partial pointcloud using the Pybullet GL renderer. Currently only supports
         randomized parameters.
@@ -544,8 +547,7 @@ class PybulletRenderer(PMRenderer):
 
         rng = np.random.default_rng(seed)
         seed1, seed2 = rng.bit_generator._seed_seq.spawn(2)  # type: ignore
-
-        self._render_env.set_joint_angles(joints, seed=seed1)
+        self._render_env.set_joint_angles(joints, seed=seed1, random_joint_id=random_joint_id)
 
         if camera_xyz is not None:
             self._render_env.set_camera(camera_xyz, seed=seed2)
