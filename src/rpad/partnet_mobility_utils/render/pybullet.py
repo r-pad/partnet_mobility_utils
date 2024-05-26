@@ -447,8 +447,8 @@ class PMRenderEnv:
         if joints is None:
             joint_dict = {jn: 0.0 for jn in self.jn_to_ix.keys()}
         elif joints == "random":
-            # joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
-            joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed, random_joint_id=random_joint_id)
+            joint_dict = self._get_random_joint_values(openclose=False, seed=seed)
+            # joint_dict = self._get_one_random_joint_values(openclose=False, seed=seed, random_joint_id=random_joint_id)
         elif joints == "random-oc":
             joint_dict = self._get_random_joint_values(openclose=True, seed=seed)
         elif joints == "open":
